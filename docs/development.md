@@ -12,14 +12,14 @@ The root `Makefile` includes `extension-ci-tools/makefiles/duckdb_extension.Make
 
 ## Supported DuckDB targets
 
-The active development target is **DuckDB v1.5.4**, with SQL coverage validated
-across DuckDB **v1.5.0**, **v1.5.1**, **v1.5.2**, and **v1.5.4**. Keep the
-version tuple explicit:
+The active development target is **DuckDB v1.5.5**, with SQL coverage validated
+across DuckDB **v1.5.0**, **v1.5.1**, **v1.5.2**, **v1.5.4**, and **v1.5.5**.
+Keep the version tuple explicit:
 
-- `duckdb/` submodule: DuckDB `v1.5.4`
-- `extension-ci-tools/` submodule and reusable workflows: `v1.5.4`
+- `duckdb/` submodule: DuckDB `v1.5.5`
+- `extension-ci-tools/` submodule and reusable workflows: `v1.5.5`
 - `extension_config.cmake`: loads the official DuckLake runtime binary built
-  for DuckDB `v1.5.4`
+  for DuckDB `v1.5.5`
 
 Validated 1.5.x DuckLake catalog formats:
 
