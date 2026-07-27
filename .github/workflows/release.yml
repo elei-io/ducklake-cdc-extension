@@ -94,10 +94,10 @@ jobs:
     # created; re-running here would burn ~30 minutes of Actions time
     # for no new signal.
     if: ${{ inputs.community_pr_only != true && inputs.community_pr_only != 'true' }}
-    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5.4
+    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5.5
     with:
       duckdb_version: ${{ needs.resolve-duckdb-version.outputs.duckdb_version }}
-      ci_tools_version: v1.5.4
+      ci_tools_version: v1.5.5
       extension_name: ducklake_cdc
       # SQL coverage already runs in day-to-day CI on Linux. The Windows
       # release triplets currently surface H-022 (`Resource deadlock avoided`)

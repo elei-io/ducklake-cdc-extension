@@ -4,7 +4,7 @@ version = "0.0.0"
 description = "End-to-end use-case examples and shared lib for the ducklake-cdc extension"
 requires-python = ">=3.14"
 dependencies = [
-    "duckdb==1.5.4",
+    "duckdb==1.5.5",
     "ducklake-client>=0.5.1",
     "ducklake-cdc-client>=0.5.1",
     "psycopg[binary]>=3.3.3",
