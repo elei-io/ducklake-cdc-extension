@@ -72,6 +72,17 @@ jobs:
           fetch-depth: 1
           submodules: recursive
 
+      - name: Verify DuckDB source matches the release ABI
+        run: |
+          set -euo pipefail
+          version="$(cat .github/duckdb-version)"
+          expected="$(git ls-remote https://github.com/duckdb/duckdb.git "refs/tags/$version" | cut -f1)"
+          actual="$(git -C duckdb rev-parse HEAD)"
+          if [[ -z "$expected" || "$actual" != "$expected" ]]; then
+            echo "::error::DuckDB source $actual does not match $version ($expected). Loading release extensions would be ABI-unsafe."
+            exit 1
+          fi
+
       - name: Install build deps
         run: |
           sudo apt-get update -y -qq
