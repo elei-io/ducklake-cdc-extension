@@ -600,6 +600,7 @@ jobs:
           path = Path(os.environ["DESCRIPTOR"])
           version = os.environ["STRIPPED_VERSION"]
           sha = os.environ["RELEASE_SHA"]
+          repo = os.environ["REPO"]
           community_test_config = (
               "  test_config: '{\"test_env_variables\":{\"LINUX_CI_IN_DOCKER\":\"0\"}}'"
           )
@@ -614,6 +615,12 @@ jobs:
           text = re.sub(
               r'(?m)^(\s*ref:\s*)["\']?[0-9a-f]{7,40}["\']?',
               lambda m: f'{m.group(1)}"{sha}"',
+              text,
+              count=1,
+          )
+          text = re.sub(
+              r'(?m)^(\s*github:\s*)[^\n]+',
+              lambda m: f'{m.group(1)}"{repo}"',
               text,
               count=1,
           )
