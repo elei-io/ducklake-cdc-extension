@@ -709,7 +709,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcConfigureInit(duckdb::Cl
 	auto result = duckdb::make_uniq<RowScanState>();
 	auto &data = input.bind_data->Cast<CdcConfigureData>();
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	const auto configured = ConfigureCdcCatalogState(conn, data.catalog_name, data.state_schema, data.metadata_schema);
 	result->rows.push_back({duckdb::Value(configured.catalog_name), duckdb::Value(configured.state_schema),
@@ -1115,7 +1114,6 @@ std::vector<duckdb::Value> CreateConsumerOnce(duckdb::ClientContext &context, co
 	// Windows MinGW's `LockFileEx` / `ERROR_POSSIBLE_DEADLOCK` path
 	// (H-022 in `docs/hazard-log.md`).
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto consumers = StateTable(conn, data.catalog_name, CONSUMERS_TABLE);
@@ -1309,7 +1307,6 @@ duckdb::unique_ptr<duckdb::FunctionData> ConsumerResetBind(duckdb::ClientContext
 std::vector<duckdb::Value> ResetConsumer(duckdb::ClientContext &context, const ConsumerResetData &data) {
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto consumers = StateTable(conn, data.catalog_name, CONSUMERS_TABLE);
@@ -1377,7 +1374,6 @@ duckdb::unique_ptr<duckdb::FunctionData> ConsumerDropBind(duckdb::ClientContext 
 std::vector<duckdb::Value> DropConsumer(duckdb::ClientContext &context, const ConsumerDropData &data) {
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto consumers = StateTable(conn, data.catalog_name, CONSUMERS_TABLE);
@@ -1440,7 +1436,6 @@ duckdb::unique_ptr<duckdb::FunctionData> ConsumerForceReleaseBind(duckdb::Client
 std::vector<duckdb::Value> ForceReleaseConsumer(duckdb::ClientContext &context, const ConsumerForceReleaseData &data) {
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto consumers = StateTable(conn, data.catalog_name, CONSUMERS_TABLE);
@@ -1506,7 +1501,6 @@ duckdb::unique_ptr<duckdb::FunctionData> ConsumerReleaseBind(duckdb::ClientConte
 
 std::vector<duckdb::Value> ReleaseConsumer(duckdb::ClientContext &context, const ConsumerReleaseData &data) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto cached_token = CachedToken(context, conn, data.catalog_name, data.consumer_name);
@@ -2118,7 +2112,6 @@ std::vector<duckdb::Value> CommitWindowWithConnection(duckdb::ClientContext &con
 
 std::vector<duckdb::Value> CommitWindow(duckdb::ClientContext &context, const CdcCommitData &data) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	return CommitWindowWithConnection(context, conn, data);
 }
 
@@ -2168,7 +2161,6 @@ duckdb::unique_ptr<duckdb::FunctionData> ConsumerHeartbeatBind(duckdb::ClientCon
 
 std::vector<duckdb::Value> HeartbeatConsumer(duckdb::ClientContext &context, const ConsumerHeartbeatData &data) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	const auto consumers = StateTable(conn, data.catalog_name, CONSUMERS_TABLE);
 	const auto cached_token = CachedToken(context, conn, data.catalog_name, data.consumer_name);
@@ -2923,7 +2915,6 @@ WaitForNextSnapshotWithSubscriptions(duckdb::ClientContext &context, duckdb::Con
 
 std::vector<duckdb::Value> WaitForNextSnapshot(duckdb::ClientContext &context, const ListenWaitData &data) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	const auto subscriptions = LoadConsumerSubscriptions(conn, data.catalog_name, data.consumer_name);
 	return WaitForNextSnapshotWithSubscriptions(context, conn, data.catalog_name, data.consumer_name, data.timeout_ms,
 	                                            subscriptions, data.poll_min_ms);
@@ -3009,7 +3000,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> ConsumerListInit(duckdb::Cl
 	auto &data = input.bind_data->Cast<ConsumerListData>();
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	// SELECT order:
@@ -3157,7 +3147,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> ConsumerSubscriptionsInit(d
 	auto &data = input.bind_data->Cast<ConsumerSubscriptionsData>();
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, data.catalog_name);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	for (const auto &sub : LoadConsumerSubscriptions(conn, data.catalog_name, data.consumer_name)) {
@@ -3644,7 +3633,6 @@ std::vector<duckdb::Value> ReadWindowWithConnection(duckdb::ClientContext &conte
 
 std::vector<duckdb::Value> ReadWindow(duckdb::ClientContext &context, const CdcWindowData &data) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	return ReadWindowWithConnection(context, conn, data);
 }
 
@@ -3733,7 +3721,6 @@ void MaybeCoalesceConsumerListen(duckdb::ClientContext &context, const std::stri
                                  const std::string &consumer_name, const std::string &stream_key, int64_t timeout_ms,
                                  int64_t max_snapshots, int64_t first_matching_snapshot) {
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	MaybeCoalesceConsumerListenWithConnection(context, conn, catalog_name, consumer_name, stream_key, timeout_ms,
 	                                          max_snapshots, first_matching_snapshot);
 }

@@ -475,3 +475,20 @@ go; this file says what can hurt users or maintainers on the way there.
   this boundary: the shared-connection shape surfaced `thread::join failed:
   Invalid argument` in 1/16 attempts while the derived-connection control
   passed 16/16.
+
+### H-023: CDC changed the database-wide thread pool during query execution
+
+- Evidence: Linux main-branch CI run 34041993086 failed consumer creation with
+  `Invalid Error: Invalid argument`; the same source passed PR CI.
+  `ConfigureCdcInternalConnection` executed `SET threads = 1` on every internal
+  connection. DuckDB 1.5.5 implements this as `ThreadsSetting::SetGlobal`, which
+  calls `TaskScheduler::SetThreads`; worker-pool resizing can join threads while
+  the outer CDC query is running. The setting is not connection-local.
+- Fix: remove that configuration helper and its callers. CDC inherits the
+  database's configured thread budget and never resizes the worker pool.
+  Applications needing a serial CDC instance must configure it before queries
+  start. Do not restore the setting around a call: that also resizes the pool.
+- Regression: `consumer_lifecycle.test` explicitly configures four threads before
+  consumer creation and asserts the setting remains four afterward.
+- This corrects an extension-owned scheduler mutation. It does not establish
+  that every previously reported H-022 symptom has the same cause.

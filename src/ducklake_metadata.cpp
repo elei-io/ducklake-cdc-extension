@@ -176,15 +176,6 @@ std::string GenerateUuid(duckdb::Connection &conn) {
 	return result->GetValue(0, 0).ToString();
 }
 
-void ConfigureCdcInternalConnection(duckdb::Connection &conn) {
-	// CDC internal connections execute short metadata lookups and materialize
-	// table-function results. Letting DuckDB parallelize those queries can make
-	// one logical consumer occupy most of the postgres-scanner connection pool.
-	// Keep the internal work serial; user analytical queries still use the
-	// caller's configured thread count.
-	ExecuteChecked(conn, "SET threads = 1");
-}
-
 //===--------------------------------------------------------------------===//
 // Catalog table-name builders + state-schema introspection
 //===--------------------------------------------------------------------===//

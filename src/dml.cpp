@@ -340,7 +340,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> DmlTicksInit(duckdb::Client
 	auto &data = input.bind_data->Cast<DmlTicksData>();
 	auto max_snapshots = data.max_snapshots;
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	const auto subscriptions = LoadDmlConsumerSubscriptions(conn, data.catalog_name, data.consumer_name);
 	if (data.listen && !data.explicit_window) {
 		auto ready = WaitForDmlConsumerSnapshot(context, conn, data.catalog_name, data.consumer_name, data.timeout_ms,
@@ -739,7 +738,6 @@ duckdb::unique_ptr<duckdb::FunctionData> CdcChangesBindBase(duckdb::ClientContex
 	// single-reader lease keeps this as a strictly producer/consumer race;
 	// fixing it would require rebinding on every Init.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, result->catalog_name);
 	const auto subscriptions = LoadConsumerSubscriptions(conn, result->catalog_name, result->consumer_name);
 	ResolveSubscribedTable(subscriptions, result->consumer_name, result->schema_id, result->table_id,
@@ -863,7 +861,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcChangesInit(duckdb::Clie
 	auto &data = input.bind_data->Cast<CdcChangesData>();
 	auto max_snapshots = data.max_snapshots;
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	const auto subscriptions = data.listen && !data.explicit_window
 	                               ? LoadDmlConsumerSubscriptions(conn, data.catalog_name, data.consumer_name)
 	                               : std::vector<ConsumerSubscriptionRow>();
@@ -1056,7 +1053,6 @@ duckdb::unique_ptr<duckdb::FunctionData> DmlTicksQueryBind(duckdb::ClientContext
 	result->table_ids = Int64ListNamedParameter(input, "table_ids");
 	result->table_names = StringListNamedParameter(input, "table_names");
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, result->catalog_name);
 	result->to_snapshot = RangeToSnapshotParameter(conn, input, result->catalog_name, 2);
 	ValidateRangeBounds(conn, result->catalog_name, result->from_snapshot, result->to_snapshot, "cdc_dml_ticks_query");
@@ -1069,7 +1065,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> DmlTicksQueryInit(duckdb::C
 	auto result = duckdb::make_uniq<RowScanState>();
 	auto &data = input.bind_data->Cast<DmlTicksData>();
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	std::unordered_set<int64_t> filter_table_ids(data.table_ids.begin(), data.table_ids.end());
 	for (const auto &table_name_input : data.table_names) {
 		auto table_name = table_name_input.find('.') == std::string::npos ? std::string("main.") + table_name_input
@@ -1127,7 +1122,6 @@ duckdb::unique_ptr<duckdb::FunctionData> CdcRangeChangesBind(duckdb::ClientConte
 	result->catalog_name = GetStringArg(input.inputs[0], "catalog");
 	result->from_snapshot = input.inputs[1].GetValue<int64_t>();
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	CheckCatalogOrThrow(conn, result->catalog_name);
 	result->to_snapshot = RangeToSnapshotParameter(conn, input, result->catalog_name, 2);
 	ValidateRangeBounds(conn, result->catalog_name, result->from_snapshot, result->to_snapshot,
@@ -1199,7 +1193,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcRangeChangesInit(duckdb:
 	auto result = duckdb::make_uniq<RowScanState>();
 	auto &data = input.bind_data->Cast<CdcRangeChangesData>();
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 
 	std::ostringstream column_list;
 	column_list << "tc.snapshot_id, tc.rowid, tc.change_type";

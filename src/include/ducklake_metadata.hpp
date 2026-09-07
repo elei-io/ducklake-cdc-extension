@@ -79,7 +79,6 @@ int64_t SingleInt64(duckdb::MaterializedQueryResult &result, const std::string &
 void ThrowIfQueryFailed(const duckdb::unique_ptr<duckdb::MaterializedQueryResult> &result);
 void ExecuteChecked(duckdb::Connection &conn, const std::string &sql);
 std::string GenerateUuid(duckdb::Connection &conn);
-void ConfigureCdcInternalConnection(duckdb::Connection &conn);
 
 //===--------------------------------------------------------------------===//
 // Catalog table-name builders + state-schema introspection
