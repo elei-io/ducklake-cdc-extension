@@ -83,7 +83,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcConsumerStatsInit(duckdb
 	auto &data = input.bind_data->Cast<CdcConsumerStatsData>();
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto current_snapshot = CurrentSnapshot(conn, data.catalog_name);
 	auto oldest_result = conn.Query("SELECT COALESCE(min(snapshot_id), 0) FROM " +
@@ -239,7 +238,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcAuditEventsInit(duckdb::
 	auto &data = input.bind_data->Cast<CdcAuditEventsData>();
 	// Single-connection chain — see CreateConsumer for the H-022 rationale.
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 	BootstrapConsumerStateOrThrow(conn, data.catalog_name);
 	const auto audit = StateTable(conn, data.catalog_name, AUDIT_TABLE);
 	std::ostringstream where;
@@ -365,7 +363,6 @@ duckdb::unique_ptr<duckdb::GlobalTableFunctionState> CdcDoctorInit(duckdb::Clien
 	auto result = duckdb::make_uniq<RowScanState>();
 	auto &data = input.bind_data->Cast<CdcDoctorData>();
 	duckdb::Connection conn(*context.db);
-	ConfigureCdcInternalConnection(conn);
 
 	if (!MetadataSchemaExists(conn, data.catalog_name)) {
 		AddDoctorRow(*result, "error", "CDC_INCOMPATIBLE_CATALOG", duckdb::Value(),
