@@ -94,10 +94,10 @@ jobs:
     # created; re-running here would burn ~30 minutes of Actions time
     # for no new signal.
     if: ${{ inputs.community_pr_only != true && inputs.community_pr_only != 'true' }}
-    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5.4
+    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5.5
     with:
       duckdb_version: ${{ needs.resolve-duckdb-version.outputs.duckdb_version }}
-      ci_tools_version: v1.5.4
+      ci_tools_version: v1.5.5
       extension_name: ducklake_cdc
       # SQL coverage already runs in day-to-day CI on Linux. The Windows
       # release triplets currently surface H-022 (`Resource deadlock avoided`)
@@ -600,6 +600,7 @@ jobs:
           path = Path(os.environ["DESCRIPTOR"])
           version = os.environ["STRIPPED_VERSION"]
           sha = os.environ["RELEASE_SHA"]
+          repo = os.environ["REPO"]
           community_test_config = (
               "  test_config: '{\"test_env_variables\":{\"LINUX_CI_IN_DOCKER\":\"0\"}}'"
           )
@@ -614,6 +615,12 @@ jobs:
           text = re.sub(
               r'(?m)^(\s*ref:\s*)["\']?[0-9a-f]{7,40}["\']?',
               lambda m: f'{m.group(1)}"{sha}"',
+              text,
+              count=1,
+          )
+          text = re.sub(
+              r'(?m)^(\s*github:\s*)[^\n]+',
+              lambda m: f'{m.group(1)}"{repo}"',
               text,
               count=1,
           )

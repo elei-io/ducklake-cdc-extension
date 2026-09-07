@@ -24,6 +24,12 @@ CREATE TABLE lake.items(id INTEGER, payload VARCHAR);
 statement ok
 INSERT INTO lake.items VALUES (1, 'one'), (2, 'two');
 
+# CDC must not resize the database-wide worker pool from inside a query.
+# This used to overwrite the caller's threads setting and intermittently fail
+# with a thread-join error during consumer creation.
+statement ok
+SET threads = 4;
+
 statement ok
 SELECT * FROM cdc_dml_consumer_create(
   'lake',
@@ -31,6 +37,11 @@ SELECT * FROM cdc_dml_consumer_create(
   table_name := 'items',
   start_at := 'beginning'
 );
+
+query I
+SELECT current_setting('threads');
+----
+4
 
 statement ok
 SELECT * FROM cdc_ddl_consumer_create(

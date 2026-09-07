@@ -50,10 +50,10 @@ jobs:
   code-quality-check:
     name: Code Quality Check
     needs: resolve-duckdb-version
-    uses: duckdb/extension-ci-tools/.github/workflows/_extension_code_quality.yml@v1.5.4
+    uses: duckdb/extension-ci-tools/.github/workflows/_extension_code_quality.yml@v1.5.5
     with:
       duckdb_version: ${{ needs.resolve-duckdb-version.outputs.duckdb_version }}
-      ci_tools_version: v1.5.4
+      ci_tools_version: v1.5.5
       extension_name: ducklake_cdc
       format_checks: 'format;tidy'
 
@@ -71,6 +71,17 @@ jobs:
         with:
           fetch-depth: 1
           submodules: recursive
+
+      - name: Verify DuckDB source matches the release ABI
+        run: |
+          set -euo pipefail
+          version="$(cat .github/duckdb-version)"
+          expected="$(git ls-remote https://github.com/duckdb/duckdb.git "refs/tags/$version" | cut -f1)"
+          actual="$(git -C duckdb rev-parse HEAD)"
+          if [[ -z "$expected" || "$actual" != "$expected" ]]; then
+            echo "::error::DuckDB source $actual does not match $version ($expected). Loading release extensions would be ABI-unsafe."
+            exit 1
+          fi
 
       - name: Install build deps
         run: |

@@ -7,7 +7,7 @@ dependencies = [
     "black>=24",
     "cmake-format>=0.6",
     "clang-format==11.0.1",
-    "duckdb==1.5.4",
+    "duckdb==1.5.5",
     "ducklake-client>=0.1.2",
     "psycopg[binary]>=3.1",
     "pytz>=2026.1.post1",
